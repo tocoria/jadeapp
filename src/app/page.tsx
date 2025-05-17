@@ -83,7 +83,6 @@ export default function Home() {
 
           <ProcedureList 
             customerCategory={selectedCategories.customer}
-            commissionCategory={selectedCategories.commission}
             onTotalChange={handleProceduresTotalChange}
             resetCounter={resetCounter}
           />

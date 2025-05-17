@@ -6,9 +6,6 @@ import { formatKRW } from '@/lib/currency'
 
 interface ProcedureListProps {
   customerCategory: CustomerCategory
-  // commissionCategory is used by the parent component for filtering
-  // and maintaining consistent prop interface across components
-  commissionCategory: ProcedureCategory
   onTotalChange: (total: number) => void
   resetCounter: number
 }
@@ -22,7 +19,7 @@ interface Procedure {
   priceK30: number
 }
 
-export default function ProcedureList({ customerCategory, commissionCategory, onTotalChange, resetCounter }: ProcedureListProps) {
+export default function ProcedureList({ customerCategory, onTotalChange, resetCounter }: ProcedureListProps) {
   const [procedures, setProcedures] = useState<Procedure[]>([])
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [loading, setLoading] = useState(true)
