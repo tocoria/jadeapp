@@ -9,11 +9,13 @@ import { formatKRW } from '@/lib/currency'
 
 const TAX_RATE = 0.1 // 10% tax rate
 
+type SelectedCategories = {
+  customer: CustomerCategory;
+  commission: ProcedureCategory;
+}
+
 export default function Home() {
-  const [selectedCategories, setSelectedCategories] = useState<{
-    customer: CustomerCategory;
-    commission: ProcedureCategory;
-  }>({
+  const [selectedCategories, setSelectedCategories] = useState<SelectedCategories>({
     customer: 'K10',
     commission: 'C0'
   })

@@ -1,6 +1,6 @@
 'use client'
 
-import { CustomerCategory, ProcedureCategory } from './CategorySelector'
+import { CustomerCategory } from './CategorySelector'
 import { useState, useEffect } from 'react'
 import { formatKRW } from '@/lib/currency'
 
