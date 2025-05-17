@@ -6,6 +6,8 @@ import { formatKRW } from '@/lib/currency'
 
 interface ProcedureListProps {
   customerCategory: CustomerCategory
+  // commissionCategory is used by the parent component for filtering
+  // and maintaining consistent prop interface across components
   commissionCategory: ProcedureCategory
   onTotalChange: (total: number) => void
   resetCounter: number

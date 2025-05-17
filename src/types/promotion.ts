@@ -1,5 +1,3 @@
-import { CustomerCategory, ProcedureCategory } from '@/components/CategorySelector'
-
 export interface Promotion {
   id: string
   code: string
