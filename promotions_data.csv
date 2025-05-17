@@ -1,0 +1,10 @@
+﻿code,name,description,price,available_k10,available_k20
+3LASER,3lasers,3 skin lasers + Cream,890000,true,false
+OLIGIO300,oligio300,Oligio 300 shots + Eye botox + Eyebrow thread lifting + Juvelook (undereye) 6cc,1190000,true,false
+ULTH200,ultherapy200,Ultherapy 200 shots + Inmode laser + Volet injection + BD + Patch + Sunscreen,890000,true,false
+THERM600,thermage600,Thermage 600 shots + Inmode laser + Collagen patch,2190000,true,false
+ULTHER,ulther,Thermage 600 + Ultherapy 150 + Inmode laser + Volet injection + BTS + BD + Collagen patch + V-line patch + Sunscreen + Cream,2990000,true,false
+YOUNG149,영149,Ultherapy 200 + Inmode + Vol + BD + Patch + Sunscreen,1490000,false,true
+YOUNG249,영249,Thermage 600 + Inmode + Collagen patch,2490000,false,true
+YOUNG399,영399,Thermage 600 + Ultherapy 150 + Inmode + Vol + BTS + BD + Collagen patch + V-line patch + Sunscreen + Cream,3990000,false,true
+YOUNG99,영99,2.5 skin lasers,990000,false,true

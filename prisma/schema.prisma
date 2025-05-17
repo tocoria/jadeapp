@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Used for direct connection to Supabase
+}
+
+model Procedure {
+  id    String @id @default(cuid())
+  code  String @unique
+  name  String
+  priceK10 Float
+  priceK20 Float
+  priceK30 Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Promotion {
+  id    String @id @default(cuid())
+  code  String @unique
+  name  String
+  price Float
+  applicableCategories String[] // Will store as ["K10", "K20", etc.]
+  restrictedCommissionCategories String[] // Will store as ["C2", "C3", etc.]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
