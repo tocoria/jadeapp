@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/utils/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
+    const supabase = createClient()
     console.log('Attempting to connect to Supabase...')
     
     // Debug query to check RLS and data
