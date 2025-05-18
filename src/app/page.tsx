@@ -4,6 +4,8 @@ import MainLayout from '@/components/layout/MainLayout'
 import CategorySelector, { CustomerCategory, ProcedureCategory } from '@/components/CategorySelector'
 import ProcedureList from '@/components/ProcedureList'
 import PromotionList from '@/components/PromotionList'
+import CartSummary from '@/components/CartSummary'
+import CurrencySelector, { Currency } from '@/components/CurrencySelector'
 import { useState, useCallback } from 'react'
 import { formatKRW } from '@/lib/currency'
 
@@ -12,6 +14,12 @@ const TAX_RATE = 0.1 // 10% tax rate
 type SelectedCategories = {
   customer: CustomerCategory;
   commission: ProcedureCategory;
+}
+
+type CartItem = {
+  name: string;
+  quantity: number;
+  price: number;
 }
 
 export default function Home() {
@@ -25,6 +33,16 @@ export default function Home() {
     promotions: 0
   })
 
+  const [selectedItems, setSelectedItems] = useState<{
+    promotions: CartItem[];
+    procedures: CartItem[];
+  }>({
+    promotions: [],
+    procedures: []
+  })
+
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('KRW')
+
   // Add a reset counter to force child components to reset
   const [resetCounter, setResetCounter] = useState(0)
 
@@ -32,17 +50,24 @@ export default function Home() {
     setSelectedCategories({ customer, commission })
   }, [])
 
-  const handleProceduresTotalChange = useCallback((total: number) => {
+  const handleProceduresTotalChange = useCallback((total: number, items: CartItem[]) => {
     setTotals(prev => ({ ...prev, procedures: total }))
+    setSelectedItems(prev => ({ ...prev, procedures: items }))
   }, [])
 
-  const handlePromotionsTotalChange = useCallback((total: number) => {
+  const handlePromotionsTotalChange = useCallback((total: number, items: CartItem[]) => {
     setTotals(prev => ({ ...prev, promotions: total }))
+    setSelectedItems(prev => ({ ...prev, promotions: items }))
   }, [])
 
   const handleReset = useCallback(() => {
     setTotals({ procedures: 0, promotions: 0 })
+    setSelectedItems({ promotions: [], procedures: [] })
     setResetCounter(prev => prev + 1) // Increment reset counter to trigger resets
+  }, [])
+
+  const handleCurrencyChange = useCallback((currency: Currency) => {
+    setSelectedCurrency(currency)
   }, [])
 
   const grandTotal = totals.procedures + totals.promotions
@@ -76,15 +101,25 @@ export default function Home() {
                 resetCounter={resetCounter}
               />
             </div>
-            <div className="w-full md:w-auto md:min-w-[300px] flex flex-col gap-2 bg-white border border-gray-200 px-4 md:px-6 py-4 rounded-lg shadow-sm sticky top-4">
-              <div className="flex items-baseline gap-2">
+            <div className="w-full md:w-auto md:min-w-[400px] flex flex-col gap-2 bg-white border border-gray-200 px-4 md:px-6 py-4 rounded-lg shadow-sm sticky top-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between gap-2">
                 <span className="text-gray-600 text-sm font-medium">Grand Total:</span>
-                <span className="text-xl md:text-2xl font-bold text-gray-900">{formatKRW(grandTotal)}</span>
+                <CurrencySelector 
+                  amount={grandTotal} 
+                  selectedCurrency={selectedCurrency}
+                  onCurrencyChange={handleCurrencyChange}
+                />
               </div>
-              <div className="flex items-baseline gap-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between gap-2 pt-2 border-t border-gray-100">
                 <span className="text-gray-600 text-sm font-medium">Final Price (inc. 10% tax):</span>
-                <span className="text-2xl md:text-3xl font-bold text-emerald-600">{formatKRW(finalPrice)}</span>
+                <CurrencySelector 
+                  amount={finalPrice} 
+                  className="text-emerald-600"
+                  selectedCurrency={selectedCurrency}
+                  showSelector={false}
+                />
               </div>
+              <CartSummary promotions={selectedItems.promotions} procedures={selectedItems.procedures} />
               <button
                 onClick={handleReset}
                 className="mt-2 w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors text-sm font-medium"

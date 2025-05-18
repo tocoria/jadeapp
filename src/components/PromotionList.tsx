@@ -3,13 +3,27 @@
 import { CustomerCategory, ProcedureCategory } from './CategorySelector'
 import { useState, useEffect } from 'react'
 import { formatKRW } from '@/lib/currency'
-import { Promotion } from '@/types/promotion'
 
-interface PromotionListProps {
-  customerCategory: CustomerCategory
-  commissionCategory: ProcedureCategory
-  onTotalChange: (total: number) => void
-  resetCounter: number
+type Promotion = {
+  code: string;
+  name: string;
+  description: string;
+  price: number;
+  applicableCategories: CustomerCategory[];
+  restrictedCommissionCategories?: ProcedureCategory[];
+}
+
+type CartItem = {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+type PromotionListProps = {
+  customerCategory: CustomerCategory;
+  commissionCategory: ProcedureCategory;
+  onTotalChange: (total: number, items: CartItem[]) => void;
+  resetCounter: number;
 }
 
 export default function PromotionList({ customerCategory, commissionCategory, onTotalChange, resetCounter }: PromotionListProps) {
@@ -18,11 +32,10 @@ export default function PromotionList({ customerCategory, commissionCategory, on
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Always call hooks at the top level
   useEffect(() => {
     // Reset total for K30 and K20+C3
     if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === 'C3')) {
-      onTotalChange(0)
+      onTotalChange(0, [])
       return
     }
 
@@ -75,15 +88,23 @@ export default function PromotionList({ customerCategory, commissionCategory, on
     return price * (quantity || 0)
   }
 
-  const overallTotal = promotions.reduce((sum, promotion) => {
-    const quantity = quantities[promotion.code] || 0
-    const price = promotion.price || 0
-    return sum + calculateTotal(price, quantity)
-  }, 0)
-
   useEffect(() => {
-    onTotalChange(overallTotal || 0)
-  }, [overallTotal, onTotalChange])
+    const selectedItems = promotions
+      .filter(promotion => quantities[promotion.code] > 0)
+      .map(promotion => ({
+        name: promotion.name,
+        quantity: quantities[promotion.code],
+        price: promotion.price
+      }));
+
+    const total = promotions.reduce((sum, promotion) => {
+      const quantity = quantities[promotion.code] || 0
+      const price = promotion.price || 0
+      return sum + calculateTotal(price, quantity)
+    }, 0)
+
+    onTotalChange(total, selectedItems)
+  }, [quantities, promotions, onTotalChange])
 
   // Return null for K30 and K20+C3 after all hooks are called
   if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === 'C3')) {
@@ -132,21 +153,21 @@ export default function PromotionList({ customerCategory, commissionCategory, on
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {promotions.map((promotion) => (
               <tr key={promotion.code}>
                 <td className="px-2 sm:px-6 py-4 text-sm text-gray-900">
-                  <div className="font-medium">{promotion.name}</div>
-                  <div className="text-gray-500 mt-1 text-xs sm:text-sm">{promotion.description}</div>
+                  <div className="font-medium text-lg">{promotion.name}</div>
+                  <div className="text-gray-500 mt-1 text-base">{promotion.description}</div>
                 </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
                   {formatKRW(promotion.price)}
                 </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-center">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
                   <div className="flex items-center justify-center gap-1 sm:gap-2">
                     <button
                       onClick={() => handleQuantityChange(promotion.code, String(Math.max(0, (quantities[promotion.code] || 0) - 1)))}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300"
+                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
                     >
                       -
                     </button>
@@ -155,17 +176,17 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                       min="0"
                       value={quantities[promotion.code] || 0}
                       onChange={(e) => handleQuantityChange(promotion.code, e.target.value)}
-                      className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-sm"
+                      className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
                     />
                     <button
                       onClick={() => handleQuantityChange(promotion.code, String((quantities[promotion.code] || 0) + 1))}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300"
+                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
                     >
                       +
                     </button>
                   </div>
                 </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
                   {formatKRW(calculateTotal(promotion.price, quantities[promotion.code] || 0))}
                 </td>
               </tr>
@@ -175,7 +196,11 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                 Total:
               </td>
               <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
-                {formatKRW(overallTotal)}
+                {formatKRW(promotions.reduce((sum, promotion) => {
+                  const quantity = quantities[promotion.code] || 0
+                  const price = promotion.price || 0
+                  return sum + calculateTotal(price, quantity)
+                }, 0))}
               </td>
             </tr>
           </tbody>

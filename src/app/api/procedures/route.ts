@@ -6,44 +6,22 @@ export async function GET() {
     const supabase = createClient()
     console.log('Attempting to connect to Supabase...')
     
-    // Debug query to check RLS and data
-    const { data: debugData, error: debugError } = await supabase
-      .from('procedure')
-      .select()
-
-    console.log('Full debug query result:', {
-      hasData: debugData && debugData.length > 0,
-      dataCount: debugData?.length || 0,
-      firstRow: debugData?.[0],
-      error: debugError
-    })
-
-    if (debugError) {
-      console.error('Debug query error:', {
-        message: debugError.message,
-        code: debugError.code,
-        details: debugError.details
-      })
-      return NextResponse.json({ 
-        error: 'Debug query failed',
-        details: debugError.message 
-      }, { status: 500 })
-    }
-
     // Main query
     const { data: procedures, error } = await supabase
       .from('procedure')
-      .select('id, code, name, priceK10, priceK20, priceK30, createdAt, updatedAt')
+      .select('*')
 
     if (error) {
       console.error('Main query error:', {
         message: error.message,
         code: error.code,
-        details: error.details
+        details: error.details,
+        hint: error.hint
       })
       return NextResponse.json({ 
         error: 'Failed to fetch procedures',
-        details: error.message 
+        details: error.message,
+        hint: error.hint
       }, { status: 500 })
     }
 
@@ -52,12 +30,21 @@ export async function GET() {
       return NextResponse.json([])
     }
 
-    console.log('Successfully fetched procedures:', {
-      count: procedures.length,
-      sample: procedures[0]
+    // Sort procedures by sort_order if it exists, otherwise keep original order
+    const sortedProcedures = procedures.sort((a, b) => {
+      if (a.sort_order != null && b.sort_order != null) {
+        return a.sort_order - b.sort_order
+      }
+      return 0
     })
 
-    return NextResponse.json(procedures)
+    console.log('Successfully fetched procedures:', {
+      count: sortedProcedures.length,
+      sample: sortedProcedures[0],
+      fields: sortedProcedures[0] ? Object.keys(sortedProcedures[0]) : []
+    })
+
+    return NextResponse.json(sortedProcedures)
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ 
