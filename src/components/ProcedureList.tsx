@@ -32,7 +32,15 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const isK30 = customerCategory === 'K30'
+
   useEffect(() => {
+    // Reset quantities and total for K30
+    if (isK30) {
+      setQuantities({})
+      onTotalChange(0, [])
+    }
+
     async function fetchProcedures() {
       try {
         const response = await fetch('/api/procedures')
@@ -46,8 +54,10 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
         }
         console.log('Received procedures:', data)
         setProcedures(data)
-        const initialQuantities = Object.fromEntries(data.map((p: Procedure) => [p.code, 0]))
-        setQuantities(initialQuantities)
+        if (!isK30) {
+          const initialQuantities = Object.fromEntries(data.map((p: Procedure) => [p.code, 0]))
+          setQuantities(initialQuantities)
+        }
       } catch (err) {
         console.error('Error fetching procedures:', err)
         setError(err instanceof Error ? err.message : 'An error occurred')
@@ -57,16 +67,17 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     }
 
     fetchProcedures()
-  }, [])
+  }, [customerCategory, onTotalChange, isK30])
 
   useEffect(() => {
-    if (procedures.length > 0) {
+    if (procedures.length > 0 && !isK30) {
       const resetQuantities = Object.fromEntries(procedures.map(p => [p.code, 0]))
       setQuantities(resetQuantities)
     }
-  }, [resetCounter, procedures])
+  }, [resetCounter, procedures, isK30])
 
   const handleQuantityChange = (code: string, value: string) => {
+    if (isK30) return; // Prevent quantity changes for K30
     const newValue = Math.max(0, parseInt(value) || 0)
     setQuantities(prev => ({ ...prev, [code]: newValue }))
   }
@@ -97,6 +108,11 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     onTotalChange(total, selectedItems)
   }, [quantities, procedures, customerCategory, onTotalChange])
 
+  // Return null for K30 after all hooks are called
+  if (customerCategory === 'K30') {
+    return null
+  }
+
   if (loading) {
     return <div className="mt-8 text-center">Loading procedures...</div>
   }
@@ -109,6 +125,9 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Available Procedures</h2>
+        {isK30 && (
+          <p className="text-sm text-gray-500">K30 customers cannot select procedures</p>
+        )}
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -120,12 +139,16 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
               <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                 Price
               </th>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
-                Qty
-              </th>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                Total
-              </th>
+              {!isK30 && (
+                <>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                    Qty
+                  </th>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                    Total
+                  </th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -137,46 +160,52 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                 <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
                   {formatKRW(getPriceForCategory(procedure, customerCategory))}
                 </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
-                  <div className="flex items-center justify-center gap-1 sm:gap-2">
-                    <button
-                      onClick={() => handleQuantityChange(procedure.code, String(Math.max(0, (quantities[procedure.code] || 0) - 1)))}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min="0"
-                      value={quantities[procedure.code] || 0}
-                      onChange={(e) => handleQuantityChange(procedure.code, e.target.value)}
-                      className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
-                    />
-                    <button
-                      onClick={() => handleQuantityChange(procedure.code, String((quantities[procedure.code] || 0) + 1))}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
-                    >
-                      +
-                    </button>
-                  </div>
-                </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                  {formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.code] || 0))}
-                </td>
+                {!isK30 && (
+                  <>
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2">
+                        <button
+                          onClick={() => handleQuantityChange(procedure.code, String(Math.max(0, (quantities[procedure.code] || 0) - 1)))}
+                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          value={quantities[procedure.code] || 0}
+                          onChange={(e) => handleQuantityChange(procedure.code, e.target.value)}
+                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
+                        />
+                        <button
+                          onClick={() => handleQuantityChange(procedure.code, String((quantities[procedure.code] || 0) + 1))}
+                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
+                      {formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.code] || 0))}
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
-            <tr key="total-row" className="bg-gray-50">
-              <td colSpan={3} className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
-                Total:
-              </td>
-              <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
-                {formatKRW(procedures.reduce((sum, procedure) => {
-                  const quantity = quantities[procedure.code] || 0
-                  const price = getPriceForCategory(procedure, customerCategory)
-                  return sum + calculateTotal(price, quantity)
-                }, 0))}
-              </td>
-            </tr>
+            {!isK30 && (
+              <tr key="total-row" className="bg-gray-50">
+                <td colSpan={3} className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                  Total:
+                </td>
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
+                  {formatKRW(procedures.reduce((sum, procedure) => {
+                    const quantity = quantities[procedure.code] || 0
+                    const price = getPriceForCategory(procedure, customerCategory)
+                    return sum + calculateTotal(price, quantity)
+                  }, 0))}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
