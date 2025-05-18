@@ -1,6 +1,5 @@
 export interface Procedure {
   id: string;
-  code: string;
   name: string;
   priceK10: number;
   priceK20: number;
