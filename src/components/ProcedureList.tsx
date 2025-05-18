@@ -91,16 +91,16 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40%]">
+              <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
                 Procedure
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                Unit Price
+              <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                Price
               </th>
-              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                Quantity
+              <th scope="col" className="px-2 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                Qty
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+              <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                 Total
               </th>
             </tr>
@@ -108,17 +108,17 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
           <tbody className="bg-white divide-y divide-gray-200">
             {procedures.map((procedure) => (
               <tr key={procedure.code}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {procedure.name}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
                   {formatKRW(getPriceForCategory(procedure, customerCategory))}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                  <div className="flex items-center justify-center gap-2">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <div className="flex items-center justify-center gap-1 sm:gap-2">
                     <button
                       onClick={() => handleQuantityChange(procedure.code, String(Math.max(0, (quantities[procedure.code] || 0) - 1)))}
-                      className="px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300"
+                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300"
                     >
                       -
                     </button>
@@ -127,26 +127,26 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                       min="0"
                       value={quantities[procedure.code] || 0}
                       onChange={(e) => handleQuantityChange(procedure.code, e.target.value)}
-                      className="w-24 px-3 py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums"
+                      className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-sm"
                     />
                     <button
                       onClick={() => handleQuantityChange(procedure.code, String((quantities[procedure.code] || 0) + 1))}
-                      className="px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300"
+                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300"
                     >
                       +
                     </button>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
                   {formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.code] || 0))}
                 </td>
               </tr>
             ))}
             <tr className="bg-gray-50">
-              <td colSpan={3} className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+              <td colSpan={3} className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
                 Total:
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
+              <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
                 {formatKRW(overallTotal)}
               </td>
             </tr>

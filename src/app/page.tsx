@@ -61,18 +61,29 @@ export default function Home() {
         </div>
         
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex-1">
+          <div className="flex flex-col-reverse gap-6 md:gap-8 md:flex-row md:items-start md:justify-between mb-8">
+            <div className="w-full space-y-6">
               <CategorySelector onCategoriesChange={handleCategoriesChange} />
+              <PromotionList 
+                customerCategory={selectedCategories.customer}
+                commissionCategory={selectedCategories.commission}
+                onTotalChange={handlePromotionsTotalChange}
+                resetCounter={resetCounter}
+              />
+              <ProcedureList 
+                customerCategory={selectedCategories.customer}
+                onTotalChange={handleProceduresTotalChange}
+                resetCounter={resetCounter}
+              />
             </div>
-            <div className="flex flex-col gap-2 bg-white border border-gray-200 px-6 py-4 rounded-lg shadow-sm">
+            <div className="w-full md:w-auto md:min-w-[300px] flex flex-col gap-2 bg-white border border-gray-200 px-4 md:px-6 py-4 rounded-lg shadow-sm sticky top-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-gray-600 text-sm font-medium">Grand Total:</span>
-                <span className="text-2xl font-bold text-gray-900">{formatKRW(grandTotal)}</span>
+                <span className="text-xl md:text-2xl font-bold text-gray-900">{formatKRW(grandTotal)}</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-gray-600 text-sm font-medium">Final Price (inc. 10% tax):</span>
-                <span className="text-3xl font-bold text-emerald-600">{formatKRW(finalPrice)}</span>
+                <span className="text-2xl md:text-3xl font-bold text-emerald-600">{formatKRW(finalPrice)}</span>
               </div>
               <button
                 onClick={handleReset}
@@ -82,18 +93,6 @@ export default function Home() {
               </button>
             </div>
           </div>
-
-          <ProcedureList 
-            customerCategory={selectedCategories.customer}
-            onTotalChange={handleProceduresTotalChange}
-            resetCounter={resetCounter}
-          />
-          <PromotionList 
-            customerCategory={selectedCategories.customer}
-            commissionCategory={selectedCategories.commission}
-            onTotalChange={handlePromotionsTotalChange}
-            resetCounter={resetCounter}
-          />
         </div>
       </div>
     </MainLayout>
