@@ -7,7 +7,6 @@ import PromotionList from '@/components/PromotionList'
 import CartSummary from '@/components/CartSummary'
 import CurrencySelector, { Currency } from '@/components/CurrencySelector'
 import { useState, useCallback } from 'react'
-import { formatKRW } from '@/lib/currency'
 
 const TAX_RATE = 0.1 // 10% tax rate
 

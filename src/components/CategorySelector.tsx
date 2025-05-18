@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 
 export type CustomerCategory = 'K10' | 'K20' | 'K30'
 export type ProcedureCategory = 'C0' | 'C2' | 'C3'
