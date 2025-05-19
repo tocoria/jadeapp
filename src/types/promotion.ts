@@ -4,8 +4,10 @@ export interface Promotion {
   name: string
   description: string
   price: number
-  available_k10: boolean
-  available_k20: boolean
+  availableK0: boolean
+  availableK20: boolean
+  availableK25: boolean
+  availableK30?: boolean
   created_at?: string
   updated_at?: string
 } 

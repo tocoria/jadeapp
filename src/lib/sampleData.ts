@@ -15,8 +15,8 @@ export const promotions: Promotion[] = [
     code: 'PROMOTH',
     name: 'Monthly Thermage Special',
     price: 1800000,
-    applicableCategories: ['K10', 'K20', 'K30'],
-    restrictedCommissionCategories: ['C3']
+    applicableCategories: ['K0', 'K20', 'K30'],
+    restrictedCommissionCategories: ['커3']
   },
   {
     id: '2',
@@ -24,14 +24,14 @@ export const promotions: Promotion[] = [
     name: 'Laser Package Deal',
     price: 800000,
     applicableCategories: ['K20', 'K30'],
-    restrictedCommissionCategories: ['C2', 'C3']
+    restrictedCommissionCategories: ['커2', '커3']
   },
   {
     id: '3',
     code: 'PROBOTX',
     name: 'Botox Bundle',
     price: 350000,
-    applicableCategories: ['K10', 'K20', 'K30'],
+    applicableCategories: ['K0', 'K20', 'K30'],
     restrictedCommissionCategories: []
   }
 ] 
