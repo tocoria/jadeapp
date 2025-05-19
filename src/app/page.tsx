@@ -6,7 +6,7 @@ import ProcedureList from '@/components/ProcedureList'
 import PromotionList from '@/components/PromotionList'
 import CartSummary from '@/components/CartSummary'
 import CurrencySelector, { Currency } from '@/components/CurrencySelector'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 const TAX_RATE = 0.1 // 10% tax rate
 
@@ -23,9 +23,12 @@ type CartItem = {
 
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<SelectedCategories>({
-    customer: 'K10',
-    commission: 'C0'
+    customer: 'K0',
+    commission: '커0'
   })
+
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
   const [totals, setTotals] = useState({
     procedures: 0,
@@ -72,6 +75,11 @@ export default function Home() {
   const grandTotal = totals.procedures + totals.promotions
   const finalPrice = grandTotal * (1 + TAX_RATE)
 
+  useEffect(() => {
+    handleCategoriesChange('K0', '커0');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -101,6 +109,22 @@ export default function Home() {
               />
             </div>
             <div className="w-full md:w-auto md:min-w-[400px] flex flex-col gap-2 bg-white border border-gray-200 px-4 md:px-6 py-4 rounded-lg shadow-sm sticky top-4">
+              <div className="flex flex-col gap-2 mb-2">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Name"
+                />
+                <input
+                  type="text"
+                  value={number}
+                  onChange={e => setNumber(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Number"
+                />
+              </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between gap-2">
                 <span className="text-gray-600 text-sm font-medium">Grand Total:</span>
                 <CurrencySelector 

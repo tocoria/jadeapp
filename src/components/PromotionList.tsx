@@ -5,12 +5,13 @@ import { useState, useEffect } from 'react'
 import { formatKRW } from '@/lib/currency'
 
 type Promotion = {
-  code: string;
+  id: string;
   name: string;
   description: string;
   price: number;
-  applicableCategories: CustomerCategory[];
-  restrictedCommissionCategories?: ProcedureCategory[];
+  availableK0: boolean;
+  availableK20: boolean;
+  availableK25: boolean;
 }
 
 type CartItem = {
@@ -34,7 +35,7 @@ export default function PromotionList({ customerCategory, commissionCategory, on
 
   useEffect(() => {
     // Reset total for K30 and K20+C3
-    if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === 'C3')) {
+    if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === '커3')) {
       onTotalChange(0, [])
       return
     }
@@ -52,7 +53,7 @@ export default function PromotionList({ customerCategory, commissionCategory, on
         
         if (isMounted) {
           setPromotions(data)
-          setQuantities(Object.fromEntries(data.map((p: Promotion) => [p.code, 0])))
+          setQuantities(Object.fromEntries(data.map((p: Promotion) => [p.id, 0])))
           setError(null)
         }
       } catch (err) {
@@ -75,13 +76,13 @@ export default function PromotionList({ customerCategory, commissionCategory, on
 
   useEffect(() => {
     if (promotions.length > 0) {
-      setQuantities(Object.fromEntries(promotions.map(p => [p.code, 0])))
+      setQuantities(Object.fromEntries(promotions.map(p => [p.id, 0])))
     }
   }, [resetCounter, promotions])
 
-  const handleQuantityChange = (code: string, value: string) => {
+  const handleQuantityChange = (id: string, value: string) => {
     const newValue = Math.max(0, parseInt(value) || 0)
-    setQuantities(prev => ({ ...prev, [code]: newValue }))
+    setQuantities(prev => ({ ...prev, [id]: newValue }))
   }
 
   const calculateTotal = (price: number, quantity: number) => {
@@ -90,15 +91,15 @@ export default function PromotionList({ customerCategory, commissionCategory, on
 
   useEffect(() => {
     const selectedItems = promotions
-      .filter(promotion => quantities[promotion.code] > 0)
+      .filter(promotion => quantities[promotion.id] > 0)
       .map(promotion => ({
         name: promotion.name,
-        quantity: quantities[promotion.code],
+        quantity: quantities[promotion.id],
         price: promotion.price
       }));
 
     const total = promotions.reduce((sum, promotion) => {
-      const quantity = quantities[promotion.code] || 0
+      const quantity = quantities[promotion.id] || 0
       const price = promotion.price || 0
       return sum + calculateTotal(price, quantity)
     }, 0)
@@ -106,8 +107,15 @@ export default function PromotionList({ customerCategory, commissionCategory, on
     onTotalChange(total, selectedItems)
   }, [quantities, promotions, onTotalChange])
 
+  const filteredPromotions = promotions.filter((promotion) => {
+    if (customerCategory === 'K0') return promotion.availableK0;
+    if (customerCategory === 'K20') return promotion.availableK20;
+    if (customerCategory === 'K25') return promotion.availableK25;
+    return false;
+  });
+
   // Return null for K30 and K20+C3 after all hooks are called
-  if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === 'C3')) {
+  if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === '커3')) {
     return null
   }
 
@@ -119,15 +127,8 @@ export default function PromotionList({ customerCategory, commissionCategory, on
     return <div className="mt-8 text-center text-red-600">Error: {error}</div>
   }
 
-  if (promotions.length === 0) {
-    return (
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Available Promotions</h2>
-        </div>
-        <p className="text-gray-500 text-center py-4">No promotions available for the selected categories.</p>
-      </div>
-    )
+  if (filteredPromotions.length === 0) {
+    return null;
   }
 
   return (
@@ -154,8 +155,8 @@ export default function PromotionList({ customerCategory, commissionCategory, on
             </tr>
           </thead>
           <tbody>
-            {promotions.map((promotion) => (
-              <tr key={promotion.code}>
+            {filteredPromotions.map((promotion) => (
+              <tr key={promotion.id}>
                 <td className="px-2 sm:px-6 py-4 text-sm text-gray-900">
                   <div className="font-medium text-lg">{promotion.name}</div>
                   <div className="text-gray-500 mt-1 text-base">{promotion.description}</div>
@@ -166,7 +167,7 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                 <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
                   <div className="flex items-center justify-center gap-1 sm:gap-2">
                     <button
-                      onClick={() => handleQuantityChange(promotion.code, String(Math.max(0, (quantities[promotion.code] || 0) - 1)))}
+                      onClick={() => handleQuantityChange(promotion.id, String(Math.max(0, (quantities[promotion.id] || 0) - 1)))}
                       className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
                     >
                       -
@@ -174,12 +175,12 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                     <input
                       type="number"
                       min="0"
-                      value={quantities[promotion.code] || 0}
-                      onChange={(e) => handleQuantityChange(promotion.code, e.target.value)}
+                      value={quantities[promotion.id] || 0}
+                      onChange={(e) => handleQuantityChange(promotion.id, e.target.value)}
                       className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
                     />
                     <button
-                      onClick={() => handleQuantityChange(promotion.code, String((quantities[promotion.code] || 0) + 1))}
+                      onClick={() => handleQuantityChange(promotion.id, String((quantities[promotion.id] || 0) + 1))}
                       className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
                     >
                       +
@@ -187,7 +188,7 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                   </div>
                 </td>
                 <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                  {formatKRW(calculateTotal(promotion.price, quantities[promotion.code] || 0))}
+                  {formatKRW(calculateTotal(promotion.price, quantities[promotion.id] || 0))}
                 </td>
               </tr>
             ))}
@@ -196,8 +197,8 @@ export default function PromotionList({ customerCategory, commissionCategory, on
                 Total:
               </td>
               <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
-                {formatKRW(promotions.reduce((sum, promotion) => {
-                  const quantity = quantities[promotion.code] || 0
+                {formatKRW(filteredPromotions.reduce((sum, promotion) => {
+                  const quantity = quantities[promotion.id] || 0
                   const price = promotion.price || 0
                   return sum + calculateTotal(price, quantity)
                 }, 0))}

@@ -7,9 +7,10 @@ import { formatKRW } from '@/lib/currency'
 type Procedure = {
   id: string;
   name: string;
-  priceK10: number;
-  priceK20: number;
-  priceK30: number;
+  priceK0: number | null;
+  priceK20: number | null;
+  priceK25: number | null;
+  priceK30: number | null;
   sort_order: number;
 }
 
@@ -74,11 +75,14 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
   useEffect(() => {
     const selectedItems = procedures
       .filter(procedure => quantities[procedure.id] > 0)
-      .map(procedure => ({
-        name: procedure.name,
-        quantity: quantities[procedure.id],
-        price: getPriceForCategory(procedure, customerCategory)
-      }));
+      .map(procedure => {
+        const price = getPriceForCategory(procedure, customerCategory);
+        return {
+          name: procedure.name,
+          quantity: quantities[procedure.id],
+          price: price ?? 0,
+        };
+      });
 
     const total = procedures.reduce((sum, procedure) => {
       const quantity = quantities[procedure.id] || 0
@@ -106,12 +110,20 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     })
   }
 
-  const calculateTotal = (price: number, quantity: number) => {
-    return price * (quantity || 0)
+  const calculateTotal = (price: number | null, quantity: number) => {
+    if (price == null) return 0;
+    return price * (quantity || 0);
   }
 
-  const getPriceForCategory = (procedure: Procedure, category: CustomerCategory) => {
-    return procedure[`price${category}` as keyof Procedure] as number || 0
+  const getPriceForCategory = (procedure: Procedure, category: CustomerCategory): number | null => {
+    const priceMap: Record<CustomerCategory, keyof Procedure> = {
+      K0: 'priceK0',
+      K20: 'priceK20',
+      K25: 'priceK25',
+      K30: 'priceK30',
+    };
+    const value = procedure[priceMap[category]];
+    return typeof value === 'number' ? value : null;
   }
 
   if (loading) {
@@ -146,55 +158,66 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {procedures.map((procedure) => (
-              <tr key={procedure.id} className="bg-white">
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900">
-                  {procedure.name}
-                </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                  {formatKRW(getPriceForCategory(procedure, customerCategory))}
-                </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
-                  <div className="flex items-center justify-center gap-1 sm:gap-2">
-                    <button
-                      onClick={() => {
-                        const currentQty = quantities[procedure.id] || 0;
-                        handleQuantityChange(procedure.id, String(Math.max(0, currentQty - 1)));
-                      }}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min="0"
-                      value={quantities[procedure.id] || 0}
-                      onChange={(e) => {
-                        const id = procedure.id;
-                        if (!id) {
-                          console.error('Missing procedure id:', procedure);
-                          return;
-                        }
-                        handleQuantityChange(id, e.target.value);
-                      }}
-                      className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
-                    />
-                    <button
-                      onClick={() => {
-                        const currentQty = quantities[procedure.id] || 0;
-                        handleQuantityChange(procedure.id, String(currentQty + 1));
-                      }}
-                      className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
-                    >
-                      +
-                    </button>
-                  </div>
-                </td>
-                <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                  {formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.id] || 0))}
-                </td>
-              </tr>
-            ))}
+            {procedures.map((procedure) => {
+              const priceAvailable = getPriceForCategory(procedure, customerCategory) != null;
+              return (
+                <tr key={procedure.id} className="bg-white">
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900">
+                    {procedure.name}
+                  </td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
+                    {priceAvailable ? (
+                      formatKRW(getPriceForCategory(procedure, customerCategory) as number)
+                    ) : (
+                      <span style={{ color: '#888' }}>not available</span>
+                    )}
+                  </td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
+                    {priceAvailable ? (
+                      <div className="flex items-center justify-center gap-1 sm:gap-2">
+                        <button
+                          onClick={() => {
+                            const currentQty = quantities[procedure.id] || 0;
+                            handleQuantityChange(procedure.id, String(Math.max(0, currentQty - 1)));
+                          }}
+                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          value={quantities[procedure.id] || 0}
+                          onChange={(e) => {
+                            const id = procedure.id;
+                            if (!id) {
+                              console.error('Missing procedure id:', procedure);
+                              return;
+                            }
+                            handleQuantityChange(id, e.target.value);
+                          }}
+                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
+                        />
+                        <button
+                          onClick={() => {
+                            const currentQty = quantities[procedure.id] || 0;
+                            handleQuantityChange(procedure.id, String(currentQty + 1));
+                          }}
+                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : null}
+                  </td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
+                    {priceAvailable ? (
+                      formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.id] || 0))
+                    ) : null}
+                  </td>
+                </tr>
+              );
+            })}
             <tr key="total-row" className="bg-gray-50">
               <td colSpan={3} className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
                 Total:

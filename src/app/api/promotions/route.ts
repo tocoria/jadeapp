@@ -24,10 +24,12 @@ export async function GET(request: Request) {
     let query = supabase.from('promotion').select('*')
 
     // Apply filters based on customer category
-    if (customerCategory === 'K10') {
-      query = query.eq('available_k10', true)
+    if (customerCategory === 'K0') {
+      query = query.eq('availableK0', true)
     } else if (customerCategory === 'K20') {
-      query = query.eq('available_k20', true)
+      query = query.eq('availableK20', true)
+    } else if (customerCategory === 'K25') {
+      query = query.eq('availableK25', true)
     }
 
     console.log('Executing Supabase query...')

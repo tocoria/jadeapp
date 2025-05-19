@@ -25,7 +25,7 @@ export default function CartSummary({ promotions, procedures }: CartSummaryProps
   return (
     <div className="border-t border-gray-200 mt-2 pt-2">
       <h3 className="text-base font-medium text-gray-700 mb-2">Selected Items:</h3>
-      <div className="space-y-2 max-h-[200px] overflow-y-auto">
+      <div className="space-y-2">
         {promotions.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-gray-500 mb-1">Promotions</h4>

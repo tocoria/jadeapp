@@ -15,8 +15,9 @@ model Procedure {
   id    String @id @default(cuid())
   code  String @unique
   name  String
-  priceK10 Float
+  priceK0 Float
   priceK20 Float
+  priceK25 Float
   priceK30 Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

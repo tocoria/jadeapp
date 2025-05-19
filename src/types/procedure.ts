@@ -1,10 +1,11 @@
-export interface Procedure {
+export type Procedure = {
   id: string;
   name: string;
-  priceK10: number;
-  priceK20: number;
-  priceK30: number;
+  priceK0: number | null;
+  priceK20: number | null;
+  priceK25: number | null;
+  priceK30: number | null;
   sort_order: number;
   created_at?: string;
   updated_at?: string;
-} 
+}; 

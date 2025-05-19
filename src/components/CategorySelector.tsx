@@ -2,28 +2,29 @@
 
 import React, { useState } from 'react'
 
-export type CustomerCategory = 'K10' | 'K20' | 'K30'
-export type ProcedureCategory = 'C0' | 'C2' | 'C3'
+export type CustomerCategory = 'K0' | 'K20' | 'K25' | 'K30'
+export type ProcedureCategory = '커0' | '커2' | '커3'
 
 interface CategorySelectorProps {
   onCategoriesChange: (customer: CustomerCategory, procedure: ProcedureCategory) => void
 }
 
 const customerCategoryColors: Record<CustomerCategory, { bg: string, text: string }> = {
-  'K10': { bg: 'bg-white', text: 'text-gray-900' },
+  'K0': { bg: 'bg-white', text: 'text-gray-900' },
   'K20': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  'K25': { bg: 'bg-green-100', text: 'text-green-800' },
   'K30': { bg: 'bg-orange-100', text: 'text-orange-800' }
 }
 
 const procedureCategoryColors: Record<ProcedureCategory, { bg: string, text: string }> = {
-  'C0': { bg: 'bg-white', text: 'text-gray-900' },
-  'C2': { bg: 'bg-pink-100', text: 'text-pink-800' },
-  'C3': { bg: 'bg-red-100', text: 'text-red-800' }
+  '커0': { bg: 'bg-white', text: 'text-gray-900' },
+  '커2': { bg: 'bg-pink-100', text: 'text-pink-800' },
+  '커3': { bg: 'bg-red-100', text: 'text-red-800' }
 }
 
 export default function CategorySelector({ onCategoriesChange }: CategorySelectorProps) {
-  const [customerCategory, setCustomerCategory] = useState<CustomerCategory>('K10')
-  const [procedureCategory, setProcedureCategory] = useState<ProcedureCategory>('C0')
+  const [customerCategory, setCustomerCategory] = useState<CustomerCategory>('K0')
+  const [procedureCategory, setProcedureCategory] = useState<ProcedureCategory>('커0')
   const [customerOpen, setCustomerOpen] = useState(false)
   const [procedureOpen, setProcedureOpen] = useState(false)
 
@@ -60,7 +61,7 @@ export default function CategorySelector({ onCategoriesChange }: CategorySelecto
           </button>
           {customerOpen && (
             <div className="absolute z-10 w-full mt-1 rounded-md bg-white border border-gray-300 shadow-lg">
-              {(['K10', 'K20', 'K30'] as CustomerCategory[]).map((value) => (
+              {(['K0', 'K20', 'K25', 'K30'] as CustomerCategory[]).map((value) => (
                 <button
                   key={value}
                   onClick={() => handleCustomerChange(value)}
@@ -95,7 +96,7 @@ export default function CategorySelector({ onCategoriesChange }: CategorySelecto
           </button>
           {procedureOpen && (
             <div className="absolute z-10 w-full mt-1 rounded-md bg-white border border-gray-300 shadow-lg">
-              {(['C0', 'C2', 'C3'] as ProcedureCategory[]).map((value) => (
+              {(['커0', '커2', '커3'] as ProcedureCategory[]).map((value) => (
                 <button
                   key={value}
                   onClick={() => handleProcedureChange(value)}
