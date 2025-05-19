@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     console.log('Request parameters:', { customerCategory, commissionCategory })
 
     // Return empty array for K30 customers and K20+C3 combinations
-    if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === 'C3')) {
+    if (customerCategory === 'K30' || (customerCategory === 'K20' && commissionCategory === '커3')) {
       console.log('Returning empty array for restricted combination:', { customerCategory, commissionCategory })
       return NextResponse.json([])
     }
