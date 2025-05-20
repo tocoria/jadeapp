@@ -1,7 +1,7 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout'
-import CategorySelector, { CustomerCategory, ProcedureCategory } from '@/components/CategorySelector'
+import CategorySelector, { CustomerCategory, ProcedureCategory, AgencyCategory } from '@/components/CategorySelector'
 import ProcedureList from '@/components/ProcedureList'
 import PromotionList from '@/components/PromotionList'
 import CartSummary from '@/components/CartSummary'
@@ -17,6 +17,7 @@ const TAX_FREE_PROCEDURE_IDS = [
 type SelectedCategories = {
   customer: CustomerCategory;
   commission: ProcedureCategory;
+  agency: AgencyCategory;
 }
 
 type CartItem = {
@@ -30,7 +31,8 @@ type CartItem = {
 export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<SelectedCategories>({
     customer: 'K0',
-    commission: '커0'
+    commission: '커0',
+    agency: 'NO_AGENCY'
   })
 
   const [name, setName] = useState('');
@@ -54,8 +56,8 @@ export default function Home() {
   // Add a reset counter to force child components to reset
   const [resetCounter, setResetCounter] = useState(0)
 
-  const handleCategoriesChange = useCallback((customer: CustomerCategory, commission: ProcedureCategory) => {
-    setSelectedCategories({ customer, commission })
+  const handleCategoriesChange = useCallback((customer: CustomerCategory, commission: ProcedureCategory, agency: AgencyCategory) => {
+    setSelectedCategories({ customer, commission, agency })
   }, [])
 
   const handleProceduresTotalChange = useCallback((total: number, items: CartItem[]) => {
@@ -101,7 +103,7 @@ export default function Home() {
   const finalPrice = calculateFinalPrice()
 
   useEffect(() => {
-    handleCategoriesChange('K0', '커0');
+    handleCategoriesChange('K0', '커0', 'NO_AGENCY');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
