@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { CustomerCategory } from './CategorySelector'
 import { formatKRW } from '@/lib/currency'
+import { v4 as uuidv4 } from 'uuid'
 
 type Procedure = {
   id: string;
@@ -32,6 +33,12 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [customProcedures, setCustomProcedures] = useState<CartItem[]>([])
+  const [showCustomForm, setShowCustomForm] = useState(false)
+  const [customName, setCustomName] = useState('')
+  const [customPrice, setCustomPrice] = useState('')
+  const [customError, setCustomError] = useState('')
+  const [customQuantity, setCustomQuantity] = useState('1')
 
   useEffect(() => {
     async function fetchProcedures() {
@@ -71,29 +78,33 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     const resetQuantities = Object.fromEntries(procedures.map(p => [p.id, 0]))
     console.log('Resetting quantities to:', resetQuantities)
     setQuantities(resetQuantities)
+    setCustomProcedures([])
   }, [procedures, resetCounter])
 
   useEffect(() => {
-    const selectedItems = procedures
-      .filter(procedure => quantities[procedure.id] > 0)
-      .map(procedure => {
+    const selectedItems = [
+      ...procedures
+        .filter(procedure => quantities[procedure.id] > 0)
+        .map(procedure => {
+          const price = getPriceForCategory(procedure, customerCategory);
+          return {
+            id: procedure.id,
+            name: procedure.name,
+            quantity: quantities[procedure.id],
+            price: price ?? 0,
+          };
+        }),
+      ...customProcedures
+    ];
+    const total =
+      procedures.reduce((sum, procedure) => {
+        const quantity = quantities[procedure.id] || 0;
         const price = getPriceForCategory(procedure, customerCategory);
-        return {
-          id: procedure.id,
-          name: procedure.name,
-          quantity: quantities[procedure.id],
-          price: price ?? 0,
-        };
-      });
-
-    const total = procedures.reduce((sum, procedure) => {
-      const quantity = quantities[procedure.id] || 0
-      const price = getPriceForCategory(procedure, customerCategory)
-      return sum + calculateTotal(price, quantity)
-    }, 0)
-
-    onTotalChange(total, selectedItems)
-  }, [quantities, procedures, customerCategory, onTotalChange])
+        return sum + calculateTotal(price, quantity);
+      }, 0) +
+      customProcedures.reduce((sum, item) => sum + item.price * item.quantity * 1.1, 0);
+    onTotalChange(total, selectedItems);
+  }, [quantities, procedures, customerCategory, onTotalChange, customProcedures]);
 
   const handleQuantityChange = (id: string, value: string) => {
     if (!id) {
@@ -128,6 +139,38 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     return typeof value === 'number' ? value : null;
   }
 
+  const handleAddCustomProcedure = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCustomError('');
+    if (!customName.trim()) {
+      setCustomError('Name is required');
+      return;
+    }
+    const priceNum = parseFloat(customPrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setCustomError('Price must be a positive number');
+      return;
+    }
+    const quantityNum = parseInt(customQuantity);
+    if (isNaN(quantityNum) || quantityNum <= 0) {
+      setCustomError('Quantity must be a positive integer');
+      return;
+    }
+    setCustomProcedures(prev => [
+      ...prev,
+      {
+        id: uuidv4(),
+        name: `${customName} (custom)`,
+        quantity: quantityNum,
+        price: priceNum,
+      },
+    ]);
+    setCustomName('');
+    setCustomPrice('');
+    setCustomQuantity('1');
+    setShowCustomForm(false);
+  };
+
   if (loading) {
     return <div className="mt-8 text-center">Loading procedures...</div>
   }
@@ -140,7 +183,58 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Available Procedures</h2>
+        <button
+          className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
+          onClick={() => setShowCustomForm(v => !v)}
+        >
+          {showCustomForm ? 'Cancel' : 'Add Custom Procedure'}
+        </button>
       </div>
+      {showCustomForm && (
+        <form onSubmit={handleAddCustomProcedure} className="mb-4 flex gap-2 items-end">
+          <div>
+            <label className="block text-xs text-gray-600">Name</label>
+            <input
+              type="text"
+              value={customName}
+              onChange={e => setCustomName(e.target.value)}
+              className="border px-2 py-1 rounded w-40"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600">Price (₩)</label>
+            <input
+              type="number"
+              min="0"
+              step="any"
+              value={customPrice}
+              onChange={e => setCustomPrice(e.target.value)}
+              className="border px-2 py-1 rounded w-28"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600">Quantity</label>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={customQuantity}
+              onChange={e => setCustomQuantity(e.target.value)}
+              className="border px-2 py-1 rounded w-20"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+          >
+            Add
+          </button>
+          {customError && <span className="text-red-500 text-xs ml-2">{customError}</span>}
+        </form>
+      )}
       <div className="w-full overflow-x-auto">
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -216,6 +310,22 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                 </tr>
               );
             })}
+            {customProcedures.map((item) => (
+              <tr key={item.id}>
+                <td className="px-2 py-4 text-sm text-gray-900">
+                  <div className="font-medium">{item.name}</div>
+                </td>
+                <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                  {formatKRW(item.price)}
+                </td>
+                <td className="px-2 py-4 whitespace-nowrap text-sm text-center">
+                  <span className="text-gray-500">{item.quantity}</span>
+                </td>
+                <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                  {formatKRW(item.price * item.quantity * 1.1)} <span className="text-xs text-gray-500">(incl. 10% tax)</span>
+                </td>
+              </tr>
+            ))}
             <tr className="bg-gray-50">
               <td colSpan={3} className="px-2 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
                 Total:
@@ -225,7 +335,7 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                   const quantity = quantities[procedure.id] || 0;
                   const price = getPriceForCategory(procedure, customerCategory) || 0;
                   return sum + calculateTotal(price, quantity);
-                }, 0))}
+                }, 0) + customProcedures.reduce((sum, item) => sum + item.price * item.quantity * 1.1, 0))}
               </td>
             </tr>
           </tbody>
