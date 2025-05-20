@@ -15,6 +15,7 @@ type Procedure = {
 }
 
 type CartItem = {
+  id: string;
   name: string;
   quantity: number;
   price: number;
@@ -78,6 +79,7 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
       .map(procedure => {
         const price = getPriceForCategory(procedure, customerCategory);
         return {
+          id: procedure.id,
           name: procedure.name,
           quantity: quantities[procedure.id],
           price: price ?? 0,
@@ -139,48 +141,44 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Available Procedures</h2>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[45%]">
+              <th scope="col" className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40%]">
                 Procedure
               </th>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+              <th scope="col" className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                 Price
               </th>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+              <th scope="col" className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                 Qty
               </th>
-              <th scope="col" className="px-2 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+              <th scope="col" className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                 Total
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200">
             {procedures.map((procedure) => {
               const priceAvailable = getPriceForCategory(procedure, customerCategory) != null;
               return (
-                <tr key={procedure.id} className="bg-white">
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900">
-                    {procedure.name}
+                <tr key={procedure.id}>
+                  <td className="px-2 py-4 text-sm text-gray-900">
+                    <div className="font-medium">{procedure.name}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                    {priceAvailable ? (
-                      formatKRW(getPriceForCategory(procedure, customerCategory) as number)
-                    ) : (
-                      <span style={{ color: '#888' }}>not available</span>
-                    )}
+                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                    {priceAvailable ? formatKRW(getPriceForCategory(procedure, customerCategory) || 0) : '-'}
                   </td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-base text-center">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm text-center">
                     {priceAvailable ? (
-                      <div className="flex items-center justify-center gap-1 sm:gap-2">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => {
                             const currentQty = quantities[procedure.id] || 0;
                             handleQuantityChange(procedure.id, String(Math.max(0, currentQty - 1)));
                           }}
-                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-lg"
+                          className="px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 rounded-l-md border border-gray-300 text-sm"
                         >
                           -
                         </button>
@@ -196,37 +194,37 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                             }
                             handleQuantityChange(id, e.target.value);
                           }}
-                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 sm:py-2 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-lg"
+                          className="w-12 px-1 py-1 text-center bg-white border-y border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tabular-nums text-sm"
                         />
                         <button
                           onClick={() => {
                             const currentQty = quantities[procedure.id] || 0;
                             handleQuantityChange(procedure.id, String(currentQty + 1));
                           }}
-                          className="px-2 sm:px-3 py-1 sm:py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-lg"
+                          className="px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 rounded-r-md border border-gray-300 text-sm"
                         >
                           +
                         </button>
                       </div>
-                    ) : null}
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-lg text-gray-900 text-right tabular-nums">
-                    {priceAvailable ? (
-                      formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory), quantities[procedure.id] || 0))
-                    ) : null}
+                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
+                    {priceAvailable ? formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory) || 0, quantities[procedure.id] || 0)) : '-'}
                   </td>
                 </tr>
               );
             })}
-            <tr key="total-row" className="bg-gray-50">
-              <td colSpan={3} className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+            <tr className="bg-gray-50">
+              <td colSpan={3} className="px-2 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
                 Total:
               </td>
-              <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
+              <td className="px-2 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
                 {formatKRW(procedures.reduce((sum, procedure) => {
-                  const quantity = quantities[procedure.id] || 0
-                  const price = getPriceForCategory(procedure, customerCategory)
-                  return sum + calculateTotal(price, quantity)
+                  const quantity = quantities[procedure.id] || 0;
+                  const price = getPriceForCategory(procedure, customerCategory) || 0;
+                  return sum + calculateTotal(price, quantity);
                 }, 0))}
               </td>
             </tr>

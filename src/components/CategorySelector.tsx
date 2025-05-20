@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 
 export type CustomerCategory = 'K0' | 'K20' | 'K25' | 'K30'
-export type ProcedureCategory = '커0' | '커2' | '커3'
+export type ProcedureCategory = '커0' | '커2' | '커3' | 'NO EVENT'
 
 interface CategorySelectorProps {
   onCategoriesChange: (customer: CustomerCategory, procedure: ProcedureCategory) => void
@@ -19,8 +19,23 @@ const customerCategoryColors: Record<CustomerCategory, { bg: string, text: strin
 const procedureCategoryColors: Record<ProcedureCategory, { bg: string, text: string }> = {
   '커0': { bg: 'bg-white', text: 'text-gray-900' },
   '커2': { bg: 'bg-pink-100', text: 'text-pink-800' },
-  '커3': { bg: 'bg-red-100', text: 'text-red-800' }
+  '커3': { bg: 'bg-red-100', text: 'text-red-800' },
+  'NO EVENT': { bg: 'bg-gray-100', text: 'text-gray-800' }
 }
+
+const CUSTOMER_CATEGORIES: { value: CustomerCategory; label: string }[] = [
+  { value: 'K0', label: 'K0' },
+  { value: 'K20', label: 'K20' },
+  { value: 'K25', label: 'K25' },
+  { value: 'K30', label: 'K30' },
+]
+
+const PROCEDURE_CATEGORIES: { value: ProcedureCategory; label: string }[] = [
+  { value: '커0', label: '커0' },
+  { value: '커2', label: '커2' },
+  { value: '커3', label: '커3' },
+  { value: 'NO EVENT', label: 'NO EVENT' },
+]
 
 export default function CategorySelector({ onCategoriesChange }: CategorySelectorProps) {
   const [customerCategory, setCustomerCategory] = useState<CustomerCategory>('K0')
@@ -61,7 +76,7 @@ export default function CategorySelector({ onCategoriesChange }: CategorySelecto
           </button>
           {customerOpen && (
             <div className="absolute z-10 w-full mt-1 rounded-md bg-white border border-gray-300 shadow-lg">
-              {(['K0', 'K20', 'K25', 'K30'] as CustomerCategory[]).map((value) => (
+              {CUSTOMER_CATEGORIES.map(({ value }) => (
                 <button
                   key={value}
                   onClick={() => handleCustomerChange(value)}
@@ -96,7 +111,7 @@ export default function CategorySelector({ onCategoriesChange }: CategorySelecto
           </button>
           {procedureOpen && (
             <div className="absolute z-10 w-full mt-1 rounded-md bg-white border border-gray-300 shadow-lg">
-              {(['커0', '커2', '커3'] as ProcedureCategory[]).map((value) => (
+              {PROCEDURE_CATEGORIES.map(({ value }) => (
                 <button
                   key={value}
                   onClick={() => handleProcedureChange(value)}
