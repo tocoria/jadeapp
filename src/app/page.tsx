@@ -112,7 +112,7 @@ export default function Home() {
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Welcome to Jade Pricing
+            Welcome to Lamiche Pricing
           </h1>
           <p className="mt-4 text-base leading-7 text-gray-600">
             Your comprehensive solution for managing and displaying pricing information.

@@ -47,7 +47,7 @@ const PROCEDURE_CATEGORIES: { value: ProcedureCategory; label: string }[] = [
 
 const AGENCY_CATEGORIES: { value: AgencyCategory; label: string }[] = [
   { value: 'NO_AGENCY', label: 'No agency' },
-  { value: 'TOYOTO', label: '투요투어' },
+  { value: 'TOYOTO', label: '투유투어' },
   { value: 'ISRA', label: '이스라' },
   { value: 'LEEYONGRIM', label: '이용림' },
 ]
