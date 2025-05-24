@@ -6,10 +6,10 @@ export async function GET() {
     const supabase = createClient()
     console.log('Attempting to connect to Supabase...')
     
-    // Main query
+    // Main query - select only existing fields
     const { data: procedures, error } = await supabase
       .from('procedure')
-      .select('*')
+      .select('id, name, type, priceK0, priceK20, priceK25, priceK30, sort_order, createdAt, updatedAt')
 
     if (error) {
       console.error('Main query error:', {

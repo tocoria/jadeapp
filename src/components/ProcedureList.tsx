@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react'
 import { CustomerCategory } from './CategorySelector'
 import { formatKRW } from '@/lib/currency'
 import { v4 as uuidv4 } from 'uuid'
+import ProcedureTypeTabs, { ProcedureType } from './ProcedureTypeTabs'
 
 type Procedure = {
   id: string;
   name: string;
+  type: ProcedureType;
   priceK0: number | null;
   priceK20: number | null;
   priceK25: number | null;
@@ -28,8 +30,15 @@ type ProcedureListProps = {
   resetCounter: number;
 }
 
+// Tax-free procedure IDs
+const TAX_FREE_PROCEDURE_IDS = [
+  '44ca9797-8bbd-4a30-83a6-b77166300532',
+  '9a51d3ad-92cb-46bd-b3e0-272529ca9cde'
+];
+
 export default function ProcedureList({ customerCategory, onTotalChange, resetCounter }: ProcedureListProps) {
   const [procedures, setProcedures] = useState<Procedure[]>([])
+  const [selectedType, setSelectedType] = useState<ProcedureType>('MAIN')
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -99,8 +108,9 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     const total =
       procedures.reduce((sum, procedure) => {
         const quantity = quantities[procedure.id] || 0;
-        const price = getPriceForCategory(procedure, customerCategory);
-        return sum + calculateTotal(price, quantity);
+        const price = getPriceForCategory(procedure, customerCategory) || 0;
+        const isTaxFree = TAX_FREE_PROCEDURE_IDS.includes(procedure.id);
+        return sum + (isTaxFree ? calculateTotal(price, quantity) : calculateTotal(price, quantity) * 1.1);
       }, 0) +
       customProcedures.reduce((sum, item) => sum + item.price * item.quantity * 1.1, 0);
     onTotalChange(total, selectedItems);
@@ -171,6 +181,9 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
     setShowCustomForm(false);
   };
 
+  // Filter procedures by selected type
+  const filteredProcedures = procedures.filter(procedure => procedure.type === selectedType)
+
   if (loading) {
     return <div className="mt-8 text-center">Loading procedures...</div>
   }
@@ -182,7 +195,14 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Available Procedures</h2>
+        <div className="flex items-center gap-8">
+          <h2 className="text-xl font-semibold text-gray-900">Procedures</h2>
+          <ProcedureTypeTabs 
+            selectedType={selectedType}
+            onTypeChange={setSelectedType}
+            availableTypes={Array.from(new Set(procedures.map(p => p.type))) as ProcedureType[]}
+          />
+        </div>
         <button
           className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
           onClick={() => setShowCustomForm(v => !v)}
@@ -254,8 +274,11 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {procedures.map((procedure) => {
+            {filteredProcedures.map((procedure) => {
               const priceAvailable = getPriceForCategory(procedure, customerCategory) != null;
+              const isTaxFree = TAX_FREE_PROCEDURE_IDS.includes(procedure.id);
+              // Debug log
+              console.log('Procedure:', procedure.id, procedure.name, 'isTaxFree:', isTaxFree);
               return (
                 <tr key={procedure.id}>
                   <td className="px-2 py-4 text-sm text-gray-900">
@@ -305,7 +328,13 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                     )}
                   </td>
                   <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right tabular-nums">
-                    {priceAvailable ? formatKRW(calculateTotal(getPriceForCategory(procedure, customerCategory) || 0, quantities[procedure.id] || 0)) : '-'}
+                    {priceAvailable
+                      ? formatKRW(
+                          isTaxFree
+                            ? calculateTotal(getPriceForCategory(procedure, customerCategory) || 0, quantities[procedure.id] || 0)
+                            : calculateTotal(getPriceForCategory(procedure, customerCategory) || 0, quantities[procedure.id] || 0) * 1.1
+                        )
+                      : '-'}
                   </td>
                 </tr>
               );
@@ -331,11 +360,14 @@ export default function ProcedureList({ customerCategory, onTotalChange, resetCo
                 Total:
               </td>
               <td className="px-2 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right tabular-nums">
-                {formatKRW(procedures.reduce((sum, procedure) => {
-                  const quantity = quantities[procedure.id] || 0;
-                  const price = getPriceForCategory(procedure, customerCategory) || 0;
-                  return sum + calculateTotal(price, quantity);
-                }, 0) + customProcedures.reduce((sum, item) => sum + item.price * item.quantity * 1.1, 0))}
+                {formatKRW(
+                  procedures.reduce((sum, procedure) => {
+                    const quantity = quantities[procedure.id] || 0;
+                    const price = getPriceForCategory(procedure, customerCategory) || 0;
+                    const isTaxFree = TAX_FREE_PROCEDURE_IDS.includes(procedure.id);
+                    return sum + (isTaxFree ? calculateTotal(price, quantity) : calculateTotal(price, quantity) * 1.1);
+                  }, 0) + customProcedures.reduce((sum, item) => sum + item.price * item.quantity * 1.1, 0)
+                )}
               </td>
             </tr>
           </tbody>

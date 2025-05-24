@@ -10,8 +10,8 @@ import { useState, useCallback, useEffect } from 'react'
 
 const TAX_RATE = 0.1 // 10% tax rate
 const TAX_FREE_PROCEDURE_IDS = [
-  'edab5f2f-a2eb-4153-a0f4-5f5af23d34a7', // laughing gas
-  '4c888346-fa6a-49bb-9cd1-f8a8625fdc5e'  // sleep sedation
+  '44ca9797-8bbd-4a30-83a6-b77166300532', // laughing gas
+  '9a51d3ad-92cb-46bd-b3e0-272529ca9cde'  // sleep sedation
 ]
 
 type SelectedCategories = {
@@ -33,14 +33,6 @@ export default function Home() {
     customer: 'K0',
     commission: '커0',
     agency: 'NO_AGENCY'
-  })
-
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-
-  const [totals, setTotals] = useState({
-    procedures: 0,
-    promotions: 0
   })
 
   const [selectedItems, setSelectedItems] = useState<{
@@ -66,17 +58,14 @@ export default function Home() {
       ...item,
       isTaxFree: item.id ? TAX_FREE_PROCEDURE_IDS.includes(item.id) : false
     }))
-    setTotals(prev => ({ ...prev, procedures: total }))
     setSelectedItems(prev => ({ ...prev, procedures: itemsWithTaxStatus }))
   }, [])
 
   const handlePromotionsTotalChange = useCallback((total: number, items: CartItem[]) => {
-    setTotals(prev => ({ ...prev, promotions: total }))
     setSelectedItems(prev => ({ ...prev, promotions: items }))
   }, [])
 
   const handleReset = useCallback(() => {
-    setTotals({ procedures: 0, promotions: 0 })
     setSelectedItems({ promotions: [], procedures: [] })
     setResetCounter(prev => prev + 1) // Increment reset counter to trigger resets
   }, [])
@@ -99,7 +88,12 @@ export default function Home() {
     return (taxableProceduresTotal + promotionsTotal) * (1 + TAX_RATE) + taxFreeProceduresTotal
   }
 
-  const grandTotal = totals.procedures + totals.promotions
+  const calculateGrandTotal = () => {
+    const proceduresTotal = selectedItems.procedures.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const promotionsTotal = selectedItems.promotions.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    return proceduresTotal + promotionsTotal
+  }
+  const grandTotal = calculateGrandTotal()
   const finalPrice = calculateFinalPrice()
 
   useEffect(() => {
@@ -138,22 +132,6 @@ export default function Home() {
             
             <div className="w-full md:w-80">
               <div className="md:sticky md:top-24 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <div className="flex flex-col gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={number}
-                    onChange={e => setNumber(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Number"
-                  />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Name"
-                  />
-                </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-col sm:flex-row items-start sm:items-baseline sm:justify-between gap-2">
                     <span className="text-gray-600 text-sm font-medium">Grand Total:</span>

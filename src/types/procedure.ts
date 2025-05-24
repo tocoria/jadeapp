@@ -6,6 +6,4 @@ export type Procedure = {
   priceK25: number | null;
   priceK30: number | null;
   sort_order: number;
-  created_at?: string;
-  updated_at?: string;
 }; 
