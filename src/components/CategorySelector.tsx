@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 
 export type CustomerCategory = 'K0' | 'K20' | 'K25' | 'K30'
-export type ProcedureCategory = '커0' | '커2' | '커3' | 'NO EVENT'
+export type ProcedureCategory = '커0' | '커2' | '커3' | '커25' | 'NO EVENT'
 export type AgencyCategory = 'NO_AGENCY' | 'TOYOTO' | 'ISRA' | 'LEEYONGRIM'
 
 interface CategorySelectorProps {
@@ -21,6 +21,7 @@ const procedureCategoryColors: Record<ProcedureCategory, { bg: string, text: str
   '커0': { bg: 'bg-white', text: 'text-gray-900' },
   '커2': { bg: 'bg-pink-100', text: 'text-pink-800' },
   '커3': { bg: 'bg-red-100', text: 'text-red-800' },
+  '커25': { bg: 'bg-orange-100', text: 'text-orange-800' },
   'NO EVENT': { bg: 'bg-gray-100', text: 'text-gray-800' }
 }
 
@@ -41,6 +42,7 @@ const CUSTOMER_CATEGORIES: { value: CustomerCategory; label: string }[] = [
 const PROCEDURE_CATEGORIES: { value: ProcedureCategory; label: string }[] = [
   { value: '커0', label: '커0' },
   { value: '커2', label: '커2' },
+  { value: '커25', label: '커25' },
   { value: '커3', label: '커3' },
   { value: 'NO EVENT', label: 'NO EVENT' },
 ]
